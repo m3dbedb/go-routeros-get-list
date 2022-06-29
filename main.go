@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -9,9 +8,6 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-
-	mysql "github.com/go-sql-driver/mysql"
-
 	"github.com/go-routeros/routeros"
 )
 
@@ -25,17 +21,8 @@ var (
 
 	// In app switches
 	interval            = flag.Duration("interval", 1*time.Second, "Interval")
-	testMysqlConnection = flag.Bool("test-mysql", false, "Test mysql")
-	watchOnlineUsers    = flag.Bool("watch-onlines", false, "Watch onlines")
 
-	// Mysql connection parameters
-	mysqlUser     = flag.String("mysql-user", os.Getenv("MYSQL_USER"), "mysql username")
-	mysqlPwd      = flag.String("mysql-pwd", os.Getenv("MYSQL_PWD"), "mysql password")
-	mysqlDb       = flag.String("mysql-db", os.Getenv("MYSQL_DB"), "mysql database")
-	mysqlHostPort = flag.String("mysql-host-port", os.Getenv("MYSQL_HOST_PORT"), "mysql host port")
 )
-
-var db *sql.DB
 
 func dial() (*routeros.Client, error) {
 	if *useTLS {
@@ -48,20 +35,7 @@ func dial() (*routeros.Client, error) {
 func main() {
 
 	flag.Parse()
-	// Testing for mysql connection
-	if *testMysqlConnection {
-		testMysql()
-	}
-
-	if *watchOnlineUsers {
-		watchOnlines()
-	} else {
-		checkOnlines()
-	}
-}
-
-func checkOnlines() {
-	fmt.Println("Checking onlines")
+	watchOnlines()
 }
 
 func watchOnlines() {
@@ -70,54 +44,16 @@ func watchOnlines() {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-
-	// Print hotspot active users forevah
-	for {
 		reply, runErr := client.Run("/ip/hotspot/active/print")
 
 		if runErr != nil {
 			log.Fatal(runErr)
 			os.Exit(1)
 		}
-		clear()
 
 		for _, re := range reply.Re {
 			for _, p := range strings.Split(*printProperties, ",") {
 				fmt.Print(re.Map[p], "\t")
 			}
-			fmt.Print("\n")
 		}
-
-		time.Sleep(*interval)
-	}
-}
-
-func testMysql() {
-
-	config := mysql.Config{
-		User:                 *mysqlUser,
-		Passwd:               *mysqlPwd,
-		Net:                  "tcp",
-		Addr:                 *mysqlHostPort,
-		DBName:               *mysqlDb,
-		AllowNativePasswords: true,
-	}
-
-	db, dbErr := sql.Open("mysql", config.FormatDSN())
-
-	if dbErr != nil {
-		log.Fatal(dbErr)
-		os.Exit(1)
-	}
-
-	fmt.Println(db.Ping())
-
-	os.Exit(0)
-}
-
-func clear() {
-	cmdName := "clear"
-	cmd := exec.Command(cmdName)
-	cmd.Stdout = os.Stdout
-	cmd.Run()
 }
