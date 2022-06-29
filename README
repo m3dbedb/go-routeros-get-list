@@ -1,6 +1,4 @@
-Creates a livestream of mikrotik/routeros online hotspot users.
-
-Output parameters are customizable
+Recieve mikrotik/routeros rules.
 
 Setup:
 
@@ -8,5 +6,4 @@ Setup:
 * Edit parameters within the new run.sh file.
 * Execute ./run.sh 
 
-
-My first usefull go project so <3 to me :)
+Made baseon on https://github.com/akinozgen/go-routeros-live-hotspot-users
