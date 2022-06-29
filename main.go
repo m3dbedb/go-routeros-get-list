@@ -44,7 +44,7 @@ func watchOnlines() {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-		reply, runErr := client.Run("/ip/hotspot/active/print")
+		reply, runErr := client.Run("/ip/address/print")
 
 		if runErr != nil {
 			log.Fatal(runErr)
